@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mana Daakuu Booking</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f6f8, #e9eef5);
+            color: #2c3e50;
+        }
+
+        .navbar {
+            background-color: #1f3b57;
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover { text-decoration: underline; }
+
+        .language-switcher {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1f3b57;
+        }
+
+        .hero {
+            max-width: 1200px;
+            margin: 40px auto 20px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 48px;
+            margin-bottom: 18px;
+            color: #1f3b57;
+            line-height: 1.2;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #4b5d6b;
+            margin-bottom: 18px;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .badge-link {
+            display: inline-block;
+            background-color: white;
+            color: #1f3b57;
+            padding: 12px 18px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .badge-link:hover { background-color: #eef4fa; }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
+        }
+
+        .form-card h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #1f3b57;
+            font-size: 30px;
+            line-height: 1.35;
+        }
+
+        .form-card .subtext {
+            color: #667786;
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+
+        .success-message {
+            background-color: #e9f9ef;
+            color: #1f7a3f;
+            border: 1px solid #b7ebc6;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .reference-box {
+            background-color: #eef4fa;
+            color: #1f3b57;
+            border: 1px solid #c9d8e6;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #34495e;
+            line-height: 1.5;
+        }
+
+        input {
+            padding: 14px;
+            border: 1px solid #ccd6dd;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        .submit-btn {
+            margin-top: 24px;
+            width: 100%;
+            padding: 15px;
+            background-color: #1f8f55;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover { background-color: #187244; }
+
+        .info-section {
+            max-width: 1200px;
+            margin: 10px auto 50px;
+            padding: 0 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-card h3 {
+            margin-top: 0;
+            color: #1f3b57;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .info-card p {
+            margin-bottom: 0;
+            color: #5d6d7e;
+            line-height: 1.7;
+        }
+
+        .footer {
+            text-align: center;
+            color: #6b7b88;
+            padding: 30px 20px 40px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-text h1 { font-size: 38px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .navbar { flex-direction: column; text-align: center; }
+            .nav-right { justify-content: center; }
+            .nav-links a { margin: 0 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">Mana Daakuu</div>
+
+        <div class="nav-right">
+            <div class="language-switcher">
+                <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" onclick="setLanguage('om')">Afaan Oromo</button>
+                <button class="lang-btn" onclick="setLanguage('am')">አማርኛ</button>
+            </div>
+
+            <div class="nav-links">
+                <a href="/" data-en="Booking" data-om="Bookingii" data-am="ቦኪንግ">Booking</a>
+                <a href="/queue" data-en="Queue Tracking" data-om="Tarree Hordofuu" data-am="የወረፋ ክትትል">Queue Tracking</a>
+                <a href="/dashboard" data-en="Owner Dashboard" data-om="Dashboardii Abbaa Hojii" data-am="የባለቤት ዳሽቦርድ">Owner Dashboard</a>
+                <a href="/income/today" data-en="Daily Income" data-om="Galii Guyyaa" data-am="የዕለታዊ ገቢ">Daily Income</a>
+                <a href="/docs">API Docs</a>
+            </div>
+        </div>
+    </div>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1 data-en="Modern Flour-Mill Booking Service" data-om="Tajaajila Bookingii Mana Daakuu Ammayyaa" data-am="ዘመናዊ የወፍጮ ቤት ቦኪንግ አገልግሎት">Modern Flour-Mill Booking Service</h1>
+
+            <p data-en="Mana Daakuu is a digital system for flour-mill booking and queue management. Customers can submit orders easily, reduce waiting time, and track service progress. Mill owners can manage customer queues, order status, and daily income efficiently."
+               data-om="Mana Daakuu sirna dijitaalaa bookingii fi to’annoo tarree eegumsaa dha. Maamiltoonni ajaja isaanii salphaatti galchuu, yeroo eegumsaa hir’isuufi adeemsa hojii isaanii hordofuu danda’u. Abbootiin hojii immoo tarree maamilaa, haala ajajaa fi galii guyyaa isaanii sirnaan to’achuu danda’u."
+               data-am="Mana Daakuu የወፍጮ ቤቶች ዲጂታል የቦኪንግ እና የወረፋ አስተዳደር ስርዓት ነው። ደንበኞች ትዕዛዛቸውን በቀላሉ ማስገባት፣ የመጠበቂያ ጊዜን መቀነስ እና የአገልግሎት ሂደታቸውን መከታተል ይችላሉ። ለባለቤቶች ደግሞ የወረፋ አስተዳደር፣ የትዕዛዝ ሁኔታ እና የዕለታዊ ገቢ አስተዳደር ይቀርባል።">
+                Mana Daakuu is a digital system for flour-mill booking and queue management. Customers can submit orders easily, reduce waiting time, and track service progress. Mill owners can manage customer queues, order status, and daily income efficiently.
+            </p>
+
+            <div class="hero-badges">
+                <a href="/" class="badge-link" data-en="Fast Booking" data-om="Bookingii Saffisaa" data-am="ፈጣን ቦኪንግ">Fast Booking</a>
+                <a href="/queue" class="badge-link" data-en="Queue Tracking" data-om="Tarree Hordofuu" data-am="የወረፋ ክትትል">Queue Tracking</a>
+                <a href="/income/today" class="badge-link" data-en="Daily Income" data-om="Galii Guyyaa" data-am="የዕለታዊ ገቢ">Daily Income</a>
+                <a href="/dashboard" class="badge-link" data-en="Owner Dashboard" data-om="Dashboardii Abbaa Hojii" data-am="የባለቤት ዳሽቦርድ">Owner Dashboard</a>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2 data-en="Create Booking" data-om="Booking Uumi" data-am="ቦኪንግ ይፍጠሩ">Create Booking</h2>
+
+            <p class="subtext" data-en="Enter customer and grinding details below." data-om="Odeeffannoo maamilaa fi daakuu asitti galchi." data-am="የደንበኛውን እና የመፍጨት መረጃ ከታች ያስገቡ።">
+                Enter customer and grinding details below.
+            </p>
+
+            {% if success_message %}
+                <div class="success-message">{{ success_message }}</div>
+            {% endif %}
+
+            {% if success_reference %}
+                <div class="reference-box">Booking Reference Code: {{ success_reference }}</div>
+            {% endif %}
+
+            <form action="/submit-booking" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="customer_name" data-en="Customer Name" data-om="Maqaa Maamilaa" data-am="የደንበኛ ስም">Customer Name</label>
+                        <input type="text" id="customer_name" name="customer_name" placeholder="Enter full name" data-placeholder-en="Enter full name" data-placeholder-om="Maqaa guutuu galchi" data-placeholder-am="ሙሉ ስም ያስገቡ" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" data-en="Phone Number" data-om="Lakkoofsa Bilbilaa" data-am="ስልክ ቁጥር">Phone Number</label>
+                        <input type="text" id="phone" name="phone" placeholder="Enter phone number" data-placeholder-en="Enter phone number" data-placeholder-om="Lakkoofsa bilbilaa galchi" data-placeholder-am="ስልክ ቁጥር ያስገቡ" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="grain_type" data-en="Grain Type" data-om="Akaakuu Midhaanii" data-am="የእህል አይነት">Grain Type</label>
+                        <input type="text" id="grain_type" name="grain_type" placeholder="e.g. teff, maize, wheat" data-placeholder-en="e.g. teff, maize, wheat" data-placeholder-om="fkn. xaafii, boqqolloo, qamadii" data-placeholder-am="ለምሳሌ ጤፍ፣ በቆሎ፣ ስንዴ" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight_kg" data-en="Weight (kg)" data-om="Ulfaatina (kg)" data-am="ክብደት (ኪ.ግ)">Weight (kg)</label>
+                        <input type="number" step="0.1" id="weight_kg" name="weight_kg" placeholder="Enter weight" data-placeholder-en="Enter weight" data-placeholder-om="Ulfaatina galchi" data-placeholder-am="ክብደት ያስገቡ" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="price_per_kg" data-en="Price per kg" data-om="Gatii kg tokkoof" data-am="ዋጋ በኪ.ግ">Price per kg</label>
+                        <input type="number" step="0.1" id="price_per_kg" name="price_per_kg" placeholder="Enter price per kg" data-placeholder-en="Enter price per kg" data-placeholder-om="Gatii kg tokkoof galchi" data-placeholder-am="ዋጋ በኪ.ግ ያስገቡ" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" data-en="Submit Booking" data-om="Booking Ergi" data-am="ቦኪንግ አስገባ">Submit Booking</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="info-grid">
+            <div class="info-card">
+                <h3 data-en="For Customers" data-om="Maamiltootaaf" data-am="ለደንበኞች">For Customers</h3>
+                <p data-en="Simple digital booking reduces confusion and helps customers submit orders without standing in long queues."
+                   data-om="Booking dijitaalaa salphaan burjaajii hir’isa; maamiltoonnis tarree dheeraa irra osoo hin turin ajaja isaanii galchuu danda’u."
+                   data-am="ቀላል ዲጂታል ቦኪንግ ግራ መጋባትን ይቀንሳል፣ ደንበኞችም ረጅም ወረፋ ሳይጠብቁ ትእዛዛቸውን ማስገባት ይችላሉ።">
+                    Simple digital booking reduces confusion and helps customers submit orders without standing in long queues.
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3 data-en="For Mill Owners" data-om="Abbootii Hojii Mana Daakuutiif" data-am="ለወፍጮ ቤት ባለቤቶች">For Mill Owners</h3>
+                <p data-en="Track incoming orders, manage the queue, and handle completed work from a clean dashboard."
+                   data-om="Ajajoota dhufan hordofi, tarree hojii to’ati, hojii xumurame immoo dashboard qulqulluu irraa bulchi."
+                   data-am="የሚገቡ ትእዛዞችን ይከታተሉ፣ የወረፋ ቦታን ይቆጣጠሩ፣ የተጠናቀቁ ስራዎችንም ከግልጽ ዳሽቦርድ ያስተዳድሩ።">
+                    Track incoming orders, manage the queue, and handle completed work from a clean dashboard.
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3 data-en="For Growth" data-om="Guddinaaf" data-am="ለእድገት">For Growth</h3>
+                <p data-en="This system can grow with SMS alerts, multiple languages, mobile-first design, and online deployment."
+                   data-om="Sirni kun beeksisa SMS, afaan hedduu, mobile-first design fi online deployment dabalachuun guddata."
+                   data-am="ይህ ስርዓት በSMS ማሳወቂያ፣ በብዙ ቋንቋዎች፣ በሞባይል ተስማሚ ዲዛይን እና በመስመር ላይ ማቅረብ ሊሰፋ ይችላል።">
+                    This system can grow with SMS alerts, multiple languages, mobile-first design, and online deployment.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        <span data-en="Mana Daakuu © 2026 — Quality Grain Milling & Customer Satisfaction"
+              data-om="Mana Daakuu © 2026 — Tajaajila Daakuu Gaarii fi Qulqullina Maamilaa"
+              data-am="Mana Daakuu © 2026 — ጥራት ያለው የዱቄት አገልግሎት እና የደንበኛ እርካታ">
+            Mana Daakuu © 2026 — Quality Grain Milling & Customer Satisfaction
+        </span>
+    </div>
+
+    <script>
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll("[data-en]").forEach((element) => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) element.textContent = text;
+            });
+
+            document.querySelectorAll("[data-placeholder-en]").forEach((element) => {
+                const text = element.getAttribute(`data-placeholder-${lang}`);
+                if (text) element.placeholder = text;
+            });
+
+            document.querySelectorAll(".lang-btn").forEach((btn) => btn.classList.remove("active"));
+            const clickedButton = Array.from(document.querySelectorAll(".lang-btn")).find(
+                (btn) => btn.getAttribute("onclick") === `setLanguage('${lang}')`
+            );
+            if (clickedButton) clickedButton.classList.add("active");
+
+            localStorage.setItem("manaDaakuuLanguage", lang);
+        }
+
+        const savedLanguage = localStorage.getItem("manaDaakuuLanguage") || "en";
+        setLanguage(savedLanguage);
+    </script>
+
+</body>
+</html>

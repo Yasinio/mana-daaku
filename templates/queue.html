@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Tracking - Mana Daakuu</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f6f8, #e9eef5);
+            color: #2c3e50;
+        }
+
+        .navbar {
+            background-color: #1f3b57;
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover { text-decoration: underline; }
+
+        .language-switcher {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1f3b57;
+        }
+
+        .page-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .hero-card, .search-card, .summary-card, .result-card, .info-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
+        }
+
+        .hero-card {
+            padding: 34px;
+            margin-bottom: 28px;
+        }
+
+        .hero-card h1 {
+            margin: 0 0 14px;
+            font-size: 42px;
+            color: #1f3b57;
+            line-height: 1.2;
+        }
+
+        .hero-card p {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.8;
+            color: #5d6d7e;
+        }
+
+        .search-card {
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .search-card h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #1f3b57;
+            font-size: 30px;
+        }
+
+        .search-card .subtext {
+            color: #667786;
+            margin-bottom: 22px;
+            line-height: 1.7;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 14px;
+        }
+
+        .search-form input {
+            padding: 15px;
+            border: 1px solid #ccd6dd;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-btn {
+            padding: 15px 22px;
+            background-color: #1f8f55;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .message-box {
+            background-color: #fff7e6;
+            color: #9a6700;
+            border: 1px solid #f3d28f;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 18px;
+            line-height: 1.6;
+        }
+
+        .summary-grid, .details-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+            margin-bottom: 28px;
+        }
+
+        .summary-card {
+            padding: 24px;
+        }
+
+        .summary-card h3 {
+            margin: 0 0 10px;
+            color: #5d6d7e;
+            font-size: 17px;
+        }
+
+        .summary-card p {
+            margin: 0;
+            font-size: 30px;
+            font-weight: bold;
+            color: #1f3b57;
+        }
+
+        .result-card {
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .result-card h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            color: #1f3b57;
+            font-size: 30px;
+        }
+
+        .details-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .detail-box {
+            background: #f8fbfe;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 18px;
+        }
+
+        .detail-box h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #6b7b88;
+        }
+
+        .detail-box p {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f3b57;
+            line-height: 1.5;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        .status-booked { background-color: #fff3e6; color: #e67e22; }
+        .status-processing { background-color: #eaf4ff; color: #2980b9; }
+        .status-done { background-color: #e9f9ef; color: #27ae60; }
+
+        .info-card { padding: 24px; }
+
+        .info-card h3 {
+            margin-top: 0;
+            color: #1f3b57;
+        }
+
+        .info-card p {
+            color: #5d6d7e;
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #6b7b88;
+            padding: 10px 20px 40px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 900px) {
+            .search-form, .summary-grid, .details-grid { grid-template-columns: 1fr; }
+            .navbar { flex-direction: column; text-align: center; }
+            .nav-right { justify-content: center; }
+            .nav-links a { margin: 0 10px; }
+            .hero-card h1 { font-size: 34px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">Mana Daakuu</div>
+
+        <div class="nav-right">
+            <div class="language-switcher">
+                <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" onclick="setLanguage('om')">Afaan Oromo</button>
+                <button class="lang-btn" onclick="setLanguage('am')">አማርኛ</button>
+            </div>
+
+            <div class="nav-links">
+                <a href="/" data-en="Booking" data-om="Bookingii" data-am="ቦኪንግ">Booking</a>
+                <a href="/queue" data-en="Queue Tracking" data-om="Tarree Hordofuu" data-am="የወረፋ ክትትል">Queue Tracking</a>
+                <a href="/dashboard" data-en="Owner Dashboard" data-om="Dashboardii Abbaa Hojii" data-am="የባለቤት ዳሽቦርድ">Owner Dashboard</a>
+                <a href="/income/today" data-en="Daily Income" data-om="Galii Guyyaa" data-am="የዕለታዊ ገቢ">Daily Income</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div class="hero-card">
+            <h1 data-en="Queue Tracking" data-om="Haala Tarree Hordofuu" data-am="የወረፋ ክትትል">Queue Tracking</h1>
+            <p data-en="Check your latest booking using your phone number or booking reference code and see your queue position, waiting time, order status, grain details, and total price."
+               data-om="Lakkoofsa bilbilaa kee yookaan lakkoofsa referensii bookingii fayyadamuun queue position, yeroo eegumsaa, haala ajajaa, akaakuu midhaanii fi gatii waliigalaa ilaali."
+               data-am="የስልክ ቁጥርዎን ወይም የቦኪንግ መለያ ቁጥርዎን በመጠቀም የወረፋ ቦታ፣ የመጠበቂያ ጊዜ፣ የትዕዛዝ ሁኔታ፣ የእህል ዝርዝር እና ጠቅላላ ዋጋ ይመልከቱ።">
+                Check your latest booking using your phone number or booking reference code and see your queue position, waiting time, order status, grain details, and total price.
+            </p>
+        </div>
+
+        <div class="search-card">
+            <h2 data-en="Check Your Booking" data-om="Booking Kee Ilaali" data-am="ቦኪንግዎን ይመልከቱ">Check Your Booking</h2>
+            <p class="subtext" data-en="Enter the same phone number used during booking or your booking reference code."
+               data-om="Lakkoofsa bilbilaa yeroo bookingii fayyadamte yookaan lakkoofsa referensii bookingii galchi."
+               data-am="በቦኪንግ ጊዜ የተጠቀሙበትን የስልክ ቁጥር ወይም የቦኪንግ መለያ ቁጥር ያስገቡ።">
+                Enter the same phone number used during booking or your booking reference code.
+            </p>
+
+            <form action="/queue" method="get" class="search-form">
+                <input type="text" name="search" placeholder="Enter phone number or booking reference"
+                       data-placeholder-en="Enter phone number or booking reference"
+                       data-placeholder-om="Lakkoofsa bilbilaa yookaan referensii bookingii galchi"
+                       data-placeholder-am="ስልክ ቁጥር ወይም የቦኪንግ መለያ ቁጥር ያስገቡ"
+                       value="{{ search }}" required>
+                <button type="submit" class="search-btn" data-en="Track Queue" data-om="Tarree Hordofi" data-am="ወረፋ ይከታተሉ">Track Queue</button>
+            </form>
+
+            {% if message %}
+                <div class="message-box">{{ message }}</div>
+            {% endif %}
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3 data-en="Active Queue Count" data-om="Baay’ina Tarree Hojii" data-am="የንቁ ወረፋ ብዛት">Active Queue Count</h3>
+                <p>{{ active_queue_count }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3 data-en="Search Used" data-om="Barbaacha Fayyadame" data-am="የተጠቀሙት ፍለጋ">Search Used</h3>
+                <p>{% if search %}{{ search }}{% else %}---{% endif %}</p>
+            </div>
+        </div>
+
+        {% if customer_order %}
+        <div class="result-card">
+            <h2 data-en="Your Latest Booking" data-om="Booking Kee Haaraa" data-am="የቅርብ ጊዜ ቦኪንግዎ">Your Latest Booking</h2>
+
+            <div class="details-grid">
+                <div class="detail-box"><h4 data-en="Reference Code" data-om="Lakkoofsa Referensii" data-am="የመለያ ቁጥር">Reference Code</h4><p>{{ customer_order.reference_code }}</p></div>
+                <div class="detail-box"><h4 data-en="Customer Name" data-om="Maqaa Maamilaa" data-am="የደንበኛ ስም">Customer Name</h4><p>{{ customer_order.customer_name }}</p></div>
+                <div class="detail-box"><h4 data-en="Phone Number" data-om="Lakkoofsa Bilbilaa" data-am="ስልክ ቁጥር">Phone Number</h4><p>{{ customer_order.phone }}</p></div>
+                <div class="detail-box"><h4 data-en="Grain Type" data-om="Akaakuu Midhaanii" data-am="የእህል አይነት">Grain Type</h4><p>{{ customer_order.grain_type }}</p></div>
+                <div class="detail-box"><h4 data-en="Weight (kg)" data-om="Ulfaatina (kg)" data-am="ክብደት (ኪ.ግ)">Weight (kg)</h4><p>{{ customer_order.weight_kg }}</p></div>
+                <div class="detail-box"><h4 data-en="Total Price" data-om="Gatii Waliigalaa" data-am="ጠቅላላ ዋጋ">Total Price</h4><p>{{ customer_order.total_price }}</p></div>
+                <div class="detail-box">
+                    <h4 data-en="Status" data-om="Haala" data-am="ሁኔታ">Status</h4>
+                    <p><span class="status-badge status-{{ customer_order.status }}">{{ customer_order.status }}</span></p>
+                </div>
+                <div class="detail-box"><h4 data-en="Queue Position" data-om="Bakka Tarree" data-am="የወረፋ ቦታ">Queue Position</h4><p>{{ queue_position }}</p></div>
+                <div class="detail-box">
+                    <h4 data-en="Estimated Waiting Time" data-om="Yeroo Eegumsaa Tilmaamaa" data-am="የተገመተ የመጠበቂያ ጊዜ">Estimated Waiting Time</h4>
+                    <p>
+                        {% if estimated_wait_minutes == 0 %}
+                            <span data-en="Ready now" data-om="Amma qophaa’eera" data-am="አሁን ዝግጁ ነው">Ready now</span>
+                        {% elif estimated_wait_minutes %}
+                            {{ estimated_wait_minutes }} <span data-en="minutes" data-om="daqiiqaa" data-am="ደቂቃ">minutes</span>
+                        {% else %}
+                            ---
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="detail-box"><h4 data-en="Created At" data-om="Yeroo Uumame" data-am="የተፈጠረበት ጊዜ">Created At</h4><p>{{ customer_order.created_at }}</p></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="info-card">
+            <h3 data-en="How this works" data-om="Akka Inni Hojjetu" data-am="እንዴት እንደሚሰራ">How this works</h3>
+            <p data-en="If your order status is booked, your order is waiting in the queue. If it is processing, the mill is currently working on it. If it is done, your flour is ready. Estimated waiting time is calculated using a simple rule of 15 minutes per order ahead of you."
+               data-om="Yoo haalli ajajaa booked ta’e, ajajni kee tarree keessa jira. Yoo processing ta’e, mana daakuu keessatti hojjetamaa jira. Yoo done ta’e, daakuu kee qophaa’eera. Yeroon eegumsaa order tokko tokkoof daqiiqaa 15 akka ta’etti shallagama."
+               data-am="የትዕዛዝዎ ሁኔታ booked ከሆነ ትዕዛዙ በወረፋ ላይ ነው። processing ከሆነ ወፍጮ ቤቱ እየሰራበት ነው። done ከሆነ ዱቄትዎ ዝግጁ ነው። የመጠበቂያ ጊዜው ከእርስዎ በፊት ላሉ እያንዳንዱ ትዕዛዝ 15 ደቂቃ በመቁጠር ይታሰባል።">
+                If your order status is booked, your order is waiting in the queue. If it is processing, the mill is currently working on it. If it is done, your flour is ready. Estimated waiting time is calculated using a simple rule of 15 minutes per order ahead of you.
+            </p>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <span data-en="Mana Daakuu © 2026 — Customer Queue Tracking"
+              data-om="Mana Daakuu © 2026 — Hordoffii Tarree Maamilaa"
+              data-am="Mana Daakuu © 2026 — የደንበኛ ወረፋ ክትትል">
+            Mana Daakuu © 2026 — Customer Queue Tracking
+        </span>
+    </div>
+
+    <script>
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll("[data-en]").forEach((element) => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) element.textContent = text;
+            });
+
+            document.querySelectorAll("[data-placeholder-en]").forEach((element) => {
+                const text = element.getAttribute(`data-placeholder-${lang}`);
+                if (text) element.placeholder = text;
+            });
+
+            document.querySelectorAll(".lang-btn").forEach((btn) => btn.classList.remove("active"));
+            const clickedButton = Array.from(document.querySelectorAll(".lang-btn")).find(
+                (btn) => btn.getAttribute("onclick") === `setLanguage('${lang}')`
+            );
+            if (clickedButton) clickedButton.classList.add("active");
+
+            localStorage.setItem("manaDaakuuLanguage", lang);
+        }
+
+        const savedLanguage = localStorage.getItem("manaDaakuuLanguage") || "en";
+        setLanguage(savedLanguage);
+    </script>
+
+</body>
+</html>
+

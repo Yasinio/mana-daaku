@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="5">
+    <title>Mana Daakuu Owner Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f6f8, #e9eef5);
+            color: #2c3e50;
+        }
+
+        .navbar {
+            background-color: #1f3b57;
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover { text-decoration: underline; }
+
+        .language-switcher {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1f3b57;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header { margin-bottom: 30px; }
+
+        .page-header h1 {
+            margin: 0 0 10px;
+            font-size: 42px;
+            color: #1f3b57;
+        }
+
+        .page-header p {
+            margin: 0;
+            font-size: 18px;
+            color: #5d6d7e;
+            line-height: 1.7;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card, .section-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
+        }
+
+        .summary-card { padding: 24px; }
+
+        .summary-card h3 {
+            margin: 0 0 12px;
+            font-size: 17px;
+            color: #5d6d7e;
+        }
+
+        .summary-card p {
+            margin: 0;
+            font-size: 30px;
+            font-weight: bold;
+            color: #1f3b57;
+        }
+
+        .section-card {
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .section-card h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #1f3b57;
+            font-size: 28px;
+        }
+
+        .section-card .subtext {
+            margin: 0 0 20px;
+            color: #667786;
+            line-height: 1.6;
+        }
+
+        .table-wrapper { overflow-x: auto; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e3e8ee;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #1f3b57;
+            color: white;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        .status-booked { background-color: #fff3e6; color: #e67e22; }
+        .status-processing { background-color: #eaf4ff; color: #2980b9; }
+        .status-done { background-color: #e9f9ef; color: #27ae60; }
+
+        .action-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .start-btn { background-color: #3498db; color: white; }
+        .done-btn { background-color: #1f8f55; color: white; }
+
+        .empty-message {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 18px;
+            border-radius: 12px;
+            color: #5d6d7e;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #1f3b57;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #6b7b88;
+            padding: 10px 20px 40px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 900px) {
+            .summary-grid { grid-template-columns: 1fr; }
+            .navbar { flex-direction: column; text-align: center; }
+            .nav-right { justify-content: center; }
+            .nav-links a { margin: 0 10px; }
+            .page-header h1 { font-size: 34px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">Mana Daakuu</div>
+
+        <div class="nav-right">
+            <div class="language-switcher">
+                <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" onclick="setLanguage('om')">Afaan Oromo</button>
+                <button class="lang-btn" onclick="setLanguage('am')">አማርኛ</button>
+            </div>
+
+            <div class="nav-links">
+                <a href="/" data-en="Booking" data-om="Bookingii" data-am="ቦኪንግ">Booking</a>
+                <a href="/queue" data-en="Queue Tracking" data-om="Tarree Hordofuu" data-am="የወረፋ ክትትል">Queue Tracking</a>
+                <a href="/dashboard" data-en="Owner Dashboard" data-om="Dashboardii Abbaa Hojii" data-am="የባለቤት ዳሽቦርድ">Owner Dashboard</a>
+                <a href="/income/today" data-en="Daily Income" data-om="Galii Guyyaa" data-am="የዕለታዊ ገቢ">Daily Income</a>
+                <a href="/docs">API Docs</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1 data-en="Owner Dashboard" data-om="Dashboardii Abbaa Hojii" data-am="የባለቤት ዳሽቦርድ">Owner Dashboard</h1>
+            <p data-en="Manage customer queue, track today’s completed orders, and monitor daily income from one place."
+               data-om="Tarree maamilaa bulchi, hojii har'a xumurame hordofi, galii guyyaa immoo bakka tokkotti ilaali."
+               data-am="የደንበኛ ወረፋን ያስተዳድሩ፣ የዛሬ የተጠናቀቁ ትዕዛዞችን ይከታተሉ እና የዕለታዊ ገቢን በአንድ ቦታ ይመልከቱ።">
+                Manage customer queue, track today’s completed orders, and monitor daily income from one place.
+            </p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3 data-en="Today's Date" data-om="Guyyaa Har'aa" data-am="የዛሬ ቀን">Today's Date</h3>
+                <p>{{ today_date }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3 data-en="Completed Orders Today" data-om="Ajajoota Har'a Xumuraman" data-am="ዛሬ የተጠናቀቁ ትዕዛዞች">Completed Orders Today</h3>
+                <p>{{ completed_orders }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3 data-en="Total Income Today" data-om="Galii Waliigalaa Har'aa" data-am="የዛሬ ጠቅላላ ገቢ">Total Income Today</h3>
+                <p>{{ total_income }}</p>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2 data-en="Active Queue" data-om="Tarree Hojii Hojii Irra Jiru" data-am="ንቁ የወረፋ ዝርዝር">Active Queue</h2>
+            <p class="subtext" data-en="Orders that are currently booked or being processed are shown here in queue order."
+               data-om="Ajajoonni amma booked ta’an yookaan hojjetamaa jiran akka tartiiba tarreetti asitti mul’atu."
+               data-am="አሁን booked ወይም processing ላይ ያሉ ትዕዛዞች እዚህ በወረፋ ቅደም ተከተል ይታያሉ።">
+                Orders that are currently booked or being processed are shown here in queue order.
+            </p>
+
+            {% if queue_list %}
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th data-en="Queue Position" data-om="Bakka Tarree" data-am="የወረፋ ቦታ">Queue Position</th>
+                            <th data-en="Reference" data-om="Referensii" data-am="መለያ">Reference</th>
+                            <th data-en="Customer" data-om="Maamilaa" data-am="ደንበኛ">Customer</th>
+                            <th data-en="Phone" data-om="Bilbila" data-am="ስልክ">Phone</th>
+                            <th data-en="Grain Type" data-om="Akaakuu Midhaanii" data-am="የእህል አይነት">Grain Type</th>
+                            <th data-en="Weight (kg)" data-om="Ulfaatina (kg)" data-am="ክብደት (ኪ.ግ)">Weight (kg)</th>
+                            <th data-en="Total Price" data-om="Gatii Waliigalaa" data-am="ጠቅላላ ዋጋ">Total Price</th>
+                            <th data-en="Status" data-om="Haala" data-am="ሁኔታ">Status</th>
+                            <th data-en="Action" data-om="Tarkaanfii" data-am="እርምጃ">Action</th>
+                        </tr>
+
+                        {% for order in queue_list %}
+                        <tr>
+                            <td>{{ order.queue_position }}</td>
+                            <td>{{ order.reference_code }}</td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>{{ order.grain_type }}</td>
+                            <td>{{ order.weight_kg }}</td>
+                            <td>{{ order.total_price }}</td>
+                            <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                            <td>
+                                <div class="action-group">
+                                    {% if order.status == "booked" %}
+                                        <form action="/dashboard/update-status/{{ order.id }}" method="post">
+                                            <input type="hidden" name="new_status" value="processing">
+                                            <button type="submit" class="action-btn start-btn" data-en="Start Processing" data-om="Hojii Jalqabi" data-am="ስራ ይጀምሩ">Start Processing</button>
+                                        </form>
+                                    {% elif order.status == "processing" %}
+                                        <form action="/dashboard/update-status/{{ order.id }}" method="post">
+                                            <input type="hidden" name="new_status" value="done">
+                                            <button type="submit" class="action-btn done-btn" data-en="Mark Done" data-om="Xumurame Godhi" data-am="እንደተጠናቀቀ ምልክት ያድርጉ">Mark Done</button>
+                                        </form>
+                                    {% else %}
+                                        <span data-en="No action" data-om="Tarkaanfiin hin jiru" data-am="ምንም እርምጃ የለም">No action</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-message" data-en="No active orders in queue." data-om="Ajajni hojii irra jiru hin jiru." data-am="በወረፋ ላይ ንቁ ትዕዛዝ የለም።">No active orders in queue.</div>
+            {% endif %}
+        </div>
+
+        <div class="section-card">
+            <h2 data-en="All Orders" data-om="Ajajoota Hunda" data-am="ሁሉም ትዕዛዞች">All Orders</h2>
+            <p class="subtext" data-en="This table shows all recorded orders, including completed ones."
+               data-om="Gabateen kun ajajoota galmaa’an hunda, kan xumuraman dabalatee, agarsiisa."
+               data-am="ይህ ሰንጠረዥ የተመዘገቡ ሁሉንም ትዕዛዞች ያሳያል፣ የተጠናቀቁትንም ጨምሮ።">
+                This table shows all recorded orders, including completed ones.
+            </p>
+
+            {% if all_orders %}
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th data-en="Reference" data-om="Referensii" data-am="መለያ">Reference</th>
+                            <th data-en="Customer" data-om="Maamilaa" data-am="ደንበኛ">Customer</th>
+                            <th data-en="Phone" data-om="Bilbila" data-am="ስልክ">Phone</th>
+                            <th data-en="Grain Type" data-om="Akaakuu Midhaanii" data-am="የእህል አይነት">Grain Type</th>
+                            <th data-en="Weight (kg)" data-om="Ulfaatina (kg)" data-am="ክብደት (ኪ.ግ)">Weight (kg)</th>
+                            <th data-en="Price per kg" data-om="Gatii kg tokkoof" data-am="ዋጋ በኪ.ግ">Price per kg</th>
+                            <th data-en="Total Price" data-om="Gatii Waliigalaa" data-am="ጠቅላላ ዋጋ">Total Price</th>
+                            <th data-en="Status" data-om="Haala" data-am="ሁኔታ">Status</th>
+                            <th data-en="Created At" data-om="Yeroo Uumame" data-am="የተፈጠረበት ጊዜ">Created At</th>
+                        </tr>
+
+                        {% for order in all_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.reference_code }}</td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>{{ order.grain_type }}</td>
+                            <td>{{ order.weight_kg }}</td>
+                            <td>{{ order.price_per_kg }}</td>
+                            <td>{{ order.total_price }}</td>
+                            <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                            <td>{{ order.created_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-message" data-en="No orders found." data-om="Ajajni hin argamne." data-am="ምንም ትዕዛዝ አልተገኘም።">No orders found.</div>
+            {% endif %}
+
+            <a href="/" class="back-link" data-en="← Go to Booking Page" data-om="← Gara Fuula Bookingii deemi" data-am="← ወደ ቦኪንግ ገጽ ተመለስ">← Go to Booking Page</a>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <span data-en="Mana Daakuu © 2026 — Owner Operations Dashboard"
+              data-om="Mana Daakuu © 2026 — Dashboardii Hojii Abbaa Hojii"
+              data-am="Mana Daakuu © 2026 — የባለቤት ስራ አስተዳደር ዳሽቦርድ">
+            Mana Daakuu © 2026 — Owner Operations Dashboard
+        </span>
+    </div>
+
+    <script>
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll("[data-en]").forEach((element) => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) element.textContent = text;
+            });
+
+            document.querySelectorAll(".lang-btn").forEach((btn) => btn.classList.remove("active"));
+            const clickedButton = Array.from(document.querySelectorAll(".lang-btn")).find(
+                (btn) => btn.getAttribute("onclick") === `setLanguage('${lang}')`
+            );
+            if (clickedButton) clickedButton.classList.add("active");
+
+            localStorage.setItem("manaDaakuuLanguage", lang);
+        }
+
+        const savedLanguage = localStorage.getItem("manaDaakuuLanguage") || "en";
+        setLanguage(savedLanguage);
+    </script>
+
+</body>
+</html>
+
