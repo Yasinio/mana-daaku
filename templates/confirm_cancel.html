@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Cancel Order - Mana Daakuu</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f6f8, #e9eef5);
+            color: #2c3e50;
+        }
+
+        .navbar {
+            background-color: #1f3b57;
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .language-switcher {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1f3b57;
+        }
+
+        .page-container {
+            max-width: 900px;
+            margin: 34px auto;
+            padding: 0 20px 40px;
+        }
+
+        .admin-toolbar {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 16px 20px;
+            margin-bottom: 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            border: 1px solid #e7edf3;
+        }
+
+        .admin-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #1f3b57;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .admin-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .admin-label {
+            font-size: 13px;
+            color: #6b7b88;
+            margin: 0;
+        }
+
+        .admin-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f3b57;
+            margin: 0;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-link {
+            text-decoration: none;
+            font-weight: bold;
+            padding: 11px 18px;
+            border-radius: 12px;
+            display: inline-block;
+            transition: background 0.2s ease;
+        }
+
+        .back-btn {
+            background: #eaf2fb;
+            color: #1f3b57;
+        }
+
+        .back-btn:hover {
+            background: #dbe8f8;
+        }
+
+        .logout-btn {
+            background: #c40024;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background: #9d001d;
+        }
+
+        .confirm-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.10);
+            padding: 30px;
+            border: 1px solid #e7edf3;
+        }
+
+        .warning-badge {
+            display: inline-block;
+            background: #fdecec;
+            color: #c0392b;
+            font-weight: bold;
+            padding: 8px 14px;
+            border-radius: 999px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: #b00020;
+            font-size: 34px;
+        }
+
+        .lead-text {
+            margin: 0 0 20px;
+            line-height: 1.8;
+            color: #566573;
+            font-size: 17px;
+        }
+
+        .details-box {
+            background: #f8fafc;
+            border: 1px solid #d9e2ec;
+            border-radius: 14px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .details-title {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #1f3b57;
+            font-size: 22px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 20px;
+        }
+
+        .detail-item {
+            background: white;
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid #e7edf3;
+        }
+
+        .detail-label {
+            display: block;
+            font-size: 13px;
+            color: #6b7b88;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #1f3b57;
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #eaf4ff;
+            color: #2980b9;
+            font-weight: bold;
+            text-transform: capitalize;
+            font-size: 13px;
+        }
+
+        .confirm-question {
+            margin-top: 28px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f3b57;
+        }
+
+        .actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            padding: 13px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .yes-btn {
+            background: #c0392b;
+            color: white;
+        }
+
+        .yes-btn:hover {
+            background: #a93226;
+        }
+
+        .no-btn {
+            background: #1f3b57;
+            color: white;
+        }
+
+        .no-btn:hover {
+            background: #162b40;
+        }
+
+        @media (max-width: 800px) {
+            .admin-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">Mana Daakuu</div>
+
+        <div class="nav-right">
+            <div class="language-switcher">
+                <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" onclick="setLanguage('om')">Afaan Oromo</button>
+                <button class="lang-btn" onclick="setLanguage('am')">አማርኛ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div class="admin-toolbar">
+            <div class="admin-left">
+                <div class="admin-badge">A</div>
+                <div class="admin-meta">
+                    <p class="admin-label" data-en="Logged in as" data-om="Kan seene" data-am="እንደ ገባ">Logged in as</p>
+                    <p class="admin-name">{{ admin_username }}</p>
+                </div>
+            </div>
+
+            <div class="toolbar-actions">
+                <a href="/dashboard" class="toolbar-link back-btn"
+                   data-en="Back to Dashboard"
+                   data-om="Gara Dashboard deebi'i"
+                   data-am="ወደ ዳሽቦርድ ተመለስ">
+                    Back to Dashboard
+                </a>
+
+                <a href="/logout" class="toolbar-link logout-btn"
+                   data-en="Logout"
+                   data-om="Ba'i"
+                   data-am="ውጣ">
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="confirm-card">
+            <div class="warning-badge"
+                 data-en="Warning"
+                 data-om="Akeekkachiisa"
+                 data-am="ማስጠንቀቂያ">
+                Warning
+            </div>
+
+            <h1 data-en="Confirm Cancel Order"
+                data-om="Ajaja Haquu Mirkaneessi"
+                data-am="ትዕዛዝ መሰረዝን ያረጋግጡ">
+                Confirm Cancel Order
+            </h1>
+
+            <p class="lead-text"
+               data-en="Are you sure you want to cancel this order? This will remove it from the active queue and keep it in order history as cancelled."
+               data-om="Dhugumaan ajaja kana haqamuu barbaaddaa? Kun tarree hojii irraa ni baasa, seenaa ajajaa keessatti ammoo akka haqameetti ni kaa'a."
+               data-am="ይህን ትዕዛዝ መሰረዝ እርግጠኛ ነዎት? ይህ ከንቁ ወረፋ ያስወግደዋል እና በትዕዛዝ ታሪክ ውስጥ እንደተሰረዘ ያቆየዋል።">
+                Are you sure you want to cancel this order? This will remove it from the active queue and keep it in order history as cancelled.
+            </p>
+
+            <div class="details-box">
+                <h2 class="details-title"
+                    data-en="Order Details"
+                    data-om="Bal'ina Ajajaa"
+                    data-am="የትዕዛዝ ዝርዝር">
+                    Order Details
+                </h2>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Reference" data-om="Referensii" data-am="መለያ">Reference</span>
+                        <span class="detail-value">{{ order.reference_code }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Customer" data-om="Maamilaa" data-am="ደንበኛ">Customer</span>
+                        <span class="detail-value">{{ order.customer_name }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Phone" data-om="Bilbila" data-am="ስልክ">Phone</span>
+                        <span class="detail-value">{{ order.phone }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Grain Type" data-om="Akaakuu Midhaanii" data-am="የእህል አይነት">Grain Type</span>
+                        <span class="detail-value">{{ order.grain_type }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Weight" data-om="Ulfaatina" data-am="ክብደት">Weight</span>
+                        <span class="detail-value">{{ order.weight_kg }} kg</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Total Price" data-om="Gatii Waliigalaa" data-am="ጠቅላላ ዋጋ">Total Price</span>
+                        <span class="detail-value">{{ order.total_price }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Status" data-om="Haala" data-am="ሁኔታ">Status</span>
+                        <span class="detail-value">
+                            <span class="status-pill">{{ order.status }}</span>
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label" data-en="Created At" data-om="Yeroo Uumame" data-am="የተፈጠረበት ጊዜ">Created At</span>
+                        <span class="detail-value">{{ order.created_at }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="confirm-question"
+               data-en="Do you want to cancel this order now?"
+               data-om="Amma ajaja kana haqamuu barbaaddaa?"
+               data-am="ይህን ትዕዛዝ አሁን መሰረዝ ይፈልጋሉ?">
+                Do you want to cancel this order now?
+            </p>
+
+            <form method="post" action="/dashboard/cancel-order/{{ order.id }}">
+                <div class="actions">
+                    <button type="submit" name="confirm_cancel" value="yes" class="yes-btn"
+                            data-en="Yes, Cancel Order"
+                            data-om="Eeyyee, Ajaja Haqi"
+                            data-am="አዎ, ትዕዛዙን ሰርዝ">
+                        Yes, Cancel Order
+                    </button>
+
+                    <button type="submit" name="confirm_cancel" value="no" class="no-btn"
+                            data-en="No, Go Back"
+                            data-om="Lakki, Deebi'i"
+                            data-am="አይ, ተመለስ">
+                        No, Go Back
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll("[data-en]").forEach((element) => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) element.textContent = text;
+            });
+
+            document.querySelectorAll(".lang-btn").forEach((btn) => btn.classList.remove("active"));
+            const clickedButton = Array.from(document.querySelectorAll(".lang-btn")).find(
+                (btn) => btn.getAttribute("onclick") === `setLanguage('${lang}')`
+            );
+            if (clickedButton) clickedButton.classList.add("active");
+
+            localStorage.setItem("manaDaakuuLanguage", lang);
+        }
+
+        const savedLanguage = localStorage.getItem("manaDaakuuLanguage") || "en";
+        setLanguage(savedLanguage);
+    </script>
+
+</body>
+</html>
+

@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="5">
     <title>Mana Daakuu Owner Dashboard</title>
     <style>
         * { box-sizing: border-box; }
@@ -72,9 +71,71 @@
         }
 
         .dashboard-container {
-            max-width: 1200px;
-            margin: 40px auto;
+            max-width: 1320px;
+            margin: 34px auto;
             padding: 0 20px;
+        }
+
+        .admin-toolbar {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 16px 20px;
+            margin-bottom: 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            border: 1px solid #e7edf3;
+        }
+
+        .admin-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #1f3b57;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .admin-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .admin-label {
+            font-size: 13px;
+            color: #6b7b88;
+            margin: 0;
+        }
+
+        .admin-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f3b57;
+            margin: 0;
+        }
+
+        .logout-btn {
+            text-decoration: none;
+            background: #c40024;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 12px;
+            font-weight: bold;
+            display: inline-block;
         }
 
         .page-header { margin-bottom: 30px; }
@@ -92,9 +153,71 @@
             line-height: 1.7;
         }
 
+        .filter-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 22px;
+            margin-bottom: 28px;
+            border: 1px solid #e7edf3;
+        }
+
+        .filter-card h2 {
+            margin: 0 0 16px;
+            color: #1f3b57;
+            font-size: 24px;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #4a6072;
+            font-size: 14px;
+        }
+
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #cfd9e3;
+            font-size: 14px;
+        }
+
+        .filter-btn,
+        .clear-btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .filter-btn {
+            background: #1f3b57;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #e9eef5;
+            color: #1f3b57;
+        }
+
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -159,7 +282,8 @@
             font-size: 14px;
         }
 
-        .status-badge {
+        .status-badge,
+        .payment-badge {
             display: inline-block;
             padding: 8px 12px;
             border-radius: 999px;
@@ -171,11 +295,29 @@
         .status-booked { background-color: #fff3e6; color: #e67e22; }
         .status-processing { background-color: #eaf4ff; color: #2980b9; }
         .status-done { background-color: #e9f9ef; color: #27ae60; }
+        .status-cancelled { background-color: #fdecec; color: #c0392b; }
+
+        .payment-paid { background-color: #e9f9ef; color: #1f8f55; }
+        .payment-unpaid { background-color: #fff3e6; color: #d35400; }
 
         .action-group {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+        }
+
+        .payment-form {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .payment-select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #cfd9e3;
+            font-size: 13px;
         }
 
         .action-btn {
@@ -185,10 +327,22 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .small-btn {
+            padding: 8px 10px;
+            font-size: 12px;
+            border-radius: 8px;
         }
 
         .start-btn { background-color: #3498db; color: white; }
         .done-btn { background-color: #1f8f55; color: white; }
+        .cancel-btn { background-color: #c0392b; color: white; }
+        .delete-btn { background-color: #7f1d1d; color: white; }
+        .paid-btn { background-color: #198754; color: white; }
+        .unpaid-btn { background-color: #6c757d; color: white; }
 
         .empty-message {
             background-color: #f8fafc;
@@ -214,12 +368,18 @@
             line-height: 1.8;
         }
 
+        @media (max-width: 1100px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .filter-form { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 900px) {
             .summary-grid { grid-template-columns: 1fr; }
             .navbar { flex-direction: column; text-align: center; }
             .nav-right { justify-content: center; }
             .nav-links a { margin: 0 10px; }
             .page-header h1 { font-size: 34px; }
+            .admin-toolbar { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -246,13 +406,78 @@
     </div>
 
     <div class="dashboard-container">
+        <div class="admin-toolbar">
+            <div class="admin-left">
+                <div class="admin-badge">A</div>
+                <div class="admin-meta">
+                    <p class="admin-label" data-en="Logged in as" data-om="Kan seene" data-am="እንደ ገባ">Logged in as</p>
+                    <p class="admin-name">{{ admin_username }}</p>
+                </div>
+            </div>
+
+            <a href="/logout" class="logout-btn" data-en="Logout" data-om="Ba'i" data-am="ውጣ">Logout</a>
+        </div>
+
         <div class="page-header">
             <h1 data-en="Owner Dashboard" data-om="Dashboardii Abbaa Hojii" data-am="የባለቤት ዳሽቦርድ">Owner Dashboard</h1>
-            <p data-en="Manage customer queue, track today’s completed orders, and monitor daily income from one place."
-               data-om="Tarree maamilaa bulchi, hojii har'a xumurame hordofi, galii guyyaa immoo bakka tokkotti ilaali."
-               data-am="የደንበኛ ወረፋን ያስተዳድሩ፣ የዛሬ የተጠናቀቁ ትዕዛዞችን ይከታተሉ እና የዕለታዊ ገቢን በአንድ ቦታ ይመልከቱ።">
-                Manage customer queue, track today’s completed orders, and monitor daily income from one place.
+            <p data-en="Manage customer queue, payments, booked orders, and daily income from one place."
+               data-om="Tarree maamilaa, kaffaltii, booking fi galii guyyaa bakka tokkotti bulchi."
+               data-am="የደንበኛ ወረፋ፣ ክፍያ፣ ቦኪንግ እና የዕለታዊ ገቢን በአንድ ቦታ ያስተዳድሩ።">
+                Manage customer queue, payments, booked orders, and daily income from one place.
             </p>
+        </div>
+
+        <div class="filter-card">
+            <h2 data-en="Search and Filter" data-om="Barbaadi fi Calali" data-am="ፈልግ እና አጣራ">Search and Filter</h2>
+
+            <form method="get" action="/dashboard" class="filter-form">
+                <div class="filter-group">
+                    <label for="search" data-en="Search by name, phone, or reference"
+                           data-om="Maqaa, bilbila, yookaan referensiidhaan barbaadi"
+                           data-am="በስም፣ በስልክ ወይም በመለያ ይፈልጉ">
+                        Search by name, phone, or reference
+                    </label>
+                    <input type="text" id="search" name="search" value="{{ search }}" class="filter-input" placeholder="Type to search...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="status_filter" data-en="Filter by status" data-om="Haala irratti hundaa'uun calali" data-am="በሁኔታ ያጣሩ">
+                        Filter by status
+                    </label>
+                    <select id="status_filter" name="status_filter" class="filter-select">
+                        <option value="all" {% if status_filter == "all" %}selected{% endif %}>All</option>
+                        <option value="booked" {% if status_filter == "booked" %}selected{% endif %}>Booked</option>
+                        <option value="processing" {% if status_filter == "processing" %}selected{% endif %}>Processing</option>
+                        <option value="done" {% if status_filter == "done" %}selected{% endif %}>Done</option>
+                        <option value="cancelled" {% if status_filter == "cancelled" %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="payment_filter" data-en="Filter by payment" data-om="Kaffaltii irratti hundaa'uun calali" data-am="በክፍያ ሁኔታ ያጣሩ">
+                        Filter by payment
+                    </label>
+                    <select id="payment_filter" name="payment_filter" class="filter-select">
+                        <option value="all" {% if payment_filter == "all" %}selected{% endif %}>All</option>
+                        <option value="paid" {% if payment_filter == "paid" %}selected{% endif %}>Paid</option>
+                        <option value="unpaid" {% if payment_filter == "unpaid" %}selected{% endif %}>Unpaid</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="filter-btn"
+                        data-en="Apply"
+                        data-om="Fayyadami"
+                        data-am="ተግብር">
+                    Apply
+                </button>
+
+                <a href="/dashboard" class="clear-btn"
+                   data-en="Clear"
+                   data-om="Haqi"
+                   data-am="አጥፋ">
+                    Clear
+                </a>
+            </form>
         </div>
 
         <div class="summary-grid">
@@ -262,12 +487,17 @@
             </div>
 
             <div class="summary-card">
-                <h3 data-en="Completed Orders Today" data-om="Ajajoota Har'a Xumuraman" data-am="ዛሬ የተጠናቀቁ ትዕዛዞች">Completed Orders Today</h3>
-                <p>{{ completed_orders }}</p>
+                <h3 data-en="Today's Orders" data-om="Ajajoota Har'aa" data-am="የዛሬ ትዕዛዞች">Today's Orders</h3>
+                <p>{{ today_orders_count }}</p>
             </div>
 
             <div class="summary-card">
-                <h3 data-en="Total Income Today" data-om="Galii Waliigalaa Har'aa" data-am="የዛሬ ጠቅላላ ገቢ">Total Income Today</h3>
+                <h3 data-en="Paid Orders Today" data-om="Ajajoota Har'a Kaffalaman" data-am="ዛሬ የተከፈሉ ትዕዛዞች">Paid Orders Today</h3>
+                <p>{{ paid_today_orders_count }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3 data-en="Paid Income Today" data-om="Galii Kaffalame Har'aa" data-am="የዛሬ የተከፈለ ገቢ">Paid Income Today</h3>
                 <p>{{ total_income }}</p>
             </div>
         </div>
@@ -291,6 +521,7 @@
                             <th data-en="Grain Type" data-om="Akaakuu Midhaanii" data-am="የእህል አይነት">Grain Type</th>
                             <th data-en="Weight (kg)" data-om="Ulfaatina (kg)" data-am="ክብደት (ኪ.ግ)">Weight (kg)</th>
                             <th data-en="Total Price" data-om="Gatii Waliigalaa" data-am="ጠቅላላ ዋጋ">Total Price</th>
+                            <th data-en="Payment" data-om="Kaffaltii" data-am="ክፍያ">Payment</th>
                             <th data-en="Status" data-om="Haala" data-am="ሁኔታ">Status</th>
                             <th data-en="Action" data-om="Tarkaanfii" data-am="እርምጃ">Action</th>
                         </tr>
@@ -304,21 +535,58 @@
                             <td>{{ order.grain_type }}</td>
                             <td>{{ order.weight_kg }}</td>
                             <td>{{ order.total_price }}</td>
+                            <td>
+                                <span class="payment-badge payment-{{ order.payment_status }}">{{ order.payment_status }}</span>
+                            </td>
                             <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
                             <td>
                                 <div class="action-group">
                                     {% if order.status == "booked" %}
                                         <form action="/dashboard/update-status/{{ order.id }}" method="post">
                                             <input type="hidden" name="new_status" value="processing">
-                                            <button type="submit" class="action-btn start-btn" data-en="Start Processing" data-om="Hojii Jalqabi" data-am="ስራ ይጀምሩ">Start Processing</button>
+                                            <button type="submit" class="action-btn start-btn"
+                                                    data-en="Start Processing"
+                                                    data-om="Hojii Jalqabi"
+                                                    data-am="ስራ ይጀምሩ">
+                                                Start Processing
+                                            </button>
                                         </form>
+
+                                        <a href="/dashboard/cancel-order/{{ order.id }}" class="action-btn cancel-btn"
+                                           data-en="Cancel Order" data-om="Ajaja Haqi" data-am="ትዕዛዝ ሰርዝ">
+                                            Cancel Order
+                                        </a>
+
+                                        <a href="/dashboard/delete-order/{{ order.id }}" class="action-btn delete-btn"
+                                           data-en="Delete Order" data-om="Ajaja Dhabamsiisi" data-am="ትዕዛዙን አጥፋ">
+                                            Delete Order
+                                        </a>
+
                                     {% elif order.status == "processing" %}
                                         <form action="/dashboard/update-status/{{ order.id }}" method="post">
                                             <input type="hidden" name="new_status" value="done">
-                                            <button type="submit" class="action-btn done-btn" data-en="Mark Done" data-om="Xumurame Godhi" data-am="እንደተጠናቀቀ ምልክት ያድርጉ">Mark Done</button>
+                                            <button type="submit" class="action-btn done-btn"
+                                                    data-en="Mark Done"
+                                                    data-om="Xumurame Godhi"
+                                                    data-am="እንደተጠናቀቀ ምልክት ያድርጉ">
+                                                Mark Done
+                                            </button>
                                         </form>
+
+                                        <a href="/dashboard/cancel-order/{{ order.id }}" class="action-btn cancel-btn"
+                                           data-en="Cancel Order" data-om="Ajaja Haqi" data-am="ትዕዛዝ ሰርዝ">
+                                            Cancel Order
+                                        </a>
+
+                                        <a href="/dashboard/delete-order/{{ order.id }}" class="action-btn delete-btn"
+                                           data-en="Delete Order" data-om="Ajaja Dhabamsiisi" data-am="ትዕዛዙን አጥፋ">
+                                            Delete Order
+                                        </a>
+
                                     {% else %}
-                                        <span data-en="No action" data-om="Tarkaanfiin hin jiru" data-am="ምንም እርምጃ የለም">No action</span>
+                                        <span data-en="No action" data-om="Tarkaanfiin hin jiru" data-am="ምንም እርምጃ የለም">
+                                            No action
+                                        </span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -333,10 +601,10 @@
 
         <div class="section-card">
             <h2 data-en="All Orders" data-om="Ajajoota Hunda" data-am="ሁሉም ትዕዛዞች">All Orders</h2>
-            <p class="subtext" data-en="This table shows all recorded orders, including completed ones."
-               data-om="Gabateen kun ajajoota galmaa’an hunda, kan xumuraman dabalatee, agarsiisa."
-               data-am="ይህ ሰንጠረዥ የተመዘገቡ ሁሉንም ትዕዛዞች ያሳያል፣ የተጠናቀቁትንም ጨምሮ።">
-                This table shows all recorded orders, including completed ones.
+            <p class="subtext" data-en="This table shows all recorded orders, including payment tracking."
+               data-om="Gabateen kun ajajoota galmaa’an hunda, kaffaltii isaanii dabalatee, agarsiisa."
+               data-am="ይህ ሰንጠረዥ የተመዘገቡ ሁሉንም ትዕዛዞች ከክፍያ ክትትል ጋር ያሳያል።">
+                This table shows all recorded orders, including payment tracking.
             </p>
 
             {% if all_orders %}
@@ -352,7 +620,11 @@
                             <th data-en="Price per kg" data-om="Gatii kg tokkoof" data-am="ዋጋ በኪ.ግ">Price per kg</th>
                             <th data-en="Total Price" data-om="Gatii Waliigalaa" data-am="ጠቅላላ ዋጋ">Total Price</th>
                             <th data-en="Status" data-om="Haala" data-am="ሁኔታ">Status</th>
+                            <th data-en="Payment Status" data-om="Haala Kaffaltii" data-am="የክፍያ ሁኔታ">Payment Status</th>
+                            <th data-en="Payment Method" data-om="Mala Kaffaltii" data-am="የክፍያ ዘዴ">Payment Method</th>
                             <th data-en="Created At" data-om="Yeroo Uumame" data-am="የተፈጠረበት ጊዜ">Created At</th>
+                            <th data-en="Payment Action" data-om="Tarkaanfii Kaffaltii" data-am="የክፍያ እርምጃ">Payment Action</th>
+                            <th data-en="Delete" data-om="Dhabamsiisi" data-am="አጥፋ">Delete</th>
                         </tr>
 
                         {% for order in all_orders %}
@@ -366,7 +638,50 @@
                             <td>{{ order.price_per_kg }}</td>
                             <td>{{ order.total_price }}</td>
                             <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                            <td><span class="payment-badge payment-{{ order.payment_status }}">{{ order.payment_status }}</span></td>
+                            <td>{{ order.payment_method or "-" }}</td>
                             <td>{{ order.created_at }}</td>
+                            <td>
+                                {% if order.status != "cancelled" and order.payment_status == "unpaid" %}
+                                    <form action="/dashboard/payment/{{ order.id }}" method="post" class="payment-form">
+                                        <input type="hidden" name="payment_status" value="paid">
+                                        <select name="payment_method" class="payment-select" required>
+                                            <option value="">Method</option>
+                                            <option value="cash">Cash</option>
+                                            <option value="transfer">Transfer</option>
+                                            <option value="mobile">Mobile</option>
+                                        </select>
+                                        <button type="submit" class="action-btn small-btn paid-btn"
+                                                data-en="Mark Paid"
+                                                data-om="Kaffalame Godhi"
+                                                data-am="እንደተከፈለ ምልክት ያድርጉ">
+                                            Mark Paid
+                                        </button>
+                                    </form>
+                                {% elif order.status != "cancelled" and order.payment_status == "paid" %}
+                                    <form action="/dashboard/payment/{{ order.id }}" method="post" class="payment-form">
+                                        <input type="hidden" name="payment_status" value="unpaid">
+                                        <input type="hidden" name="payment_method" value="">
+                                        <button type="submit" class="action-btn small-btn unpaid-btn"
+                                                data-en="Mark Unpaid"
+                                                data-om="Hin Kaffalamne Godhi"
+                                                data-am="እንዳልተከፈለ ምልክት ያድርጉ">
+                                            Mark Unpaid
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span data-en="Not available" data-om="Hin jiru" data-am="አይገኝም">Not available</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/dashboard/delete-order/{{ order.id }}"
+                                   class="action-btn delete-btn"
+                                   data-en="Delete Order"
+                                   data-om="Ajaja Dhabamsiisi"
+                                   data-am="ትዕዛዙን አጥፋ">
+                                    Delete Order
+                                </a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </table>
@@ -411,4 +726,3 @@
 
 </body>
 </html>
-

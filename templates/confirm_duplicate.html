@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Duplicate Booking - Mana Daakuu</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f4f6f8, #e9eef5);
+            color: #2c3e50;
+        }
+
+        .navbar {
+            background-color: #1f3b57;
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .language-switcher {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: #1f3b57;
+        }
+
+        .page-container {
+            max-width: 900px;
+            margin: 34px auto;
+            padding: 0 20px 40px;
+        }
+
+        .top-toolbar {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            padding: 16px 20px;
+            margin-bottom: 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            border: 1px solid #e7edf3;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #1f3b57;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .toolbar-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .toolbar-label {
+            font-size: 13px;
+            color: #6b7b88;
+            margin: 0;
+        }
+
+        .toolbar-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f3b57;
+            margin: 0;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-link {
+            text-decoration: none;
+            font-weight: bold;
+            padding: 11px 18px;
+            border-radius: 12px;
+            display: inline-block;
+            transition: background 0.2s ease;
+        }
+
+        .back-btn {
+            background: #eaf2fb;
+            color: #1f3b57;
+        }
+
+        .duplicate-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.10);
+            padding: 30px;
+            border: 1px solid #e7edf3;
+        }
+
+        .warning-badge {
+            display: inline-block;
+            background: #fff3e6;
+            color: #c46b00;
+            font-weight: bold;
+            padding: 8px 14px;
+            border-radius: 999px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: #b00020;
+            font-size: 34px;
+        }
+
+        .lead-text {
+            margin: 0 0 20px;
+            line-height: 1.8;
+            color: #566573;
+            font-size: 17px;
+        }
+
+        .details-box {
+            background: #f8fafc;
+            border: 1px solid #d9e2ec;
+            border-radius: 14px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .details-title {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #1f3b57;
+            font-size: 22px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 20px;
+        }
+
+        .detail-item {
+            background: white;
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid #e7edf3;
+        }
+
+        .detail-label {
+            display: block;
+            font-size: 13px;
+            color: #6b7b88;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #1f3b57;
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #eaf4ff;
+            color: #2980b9;
+            font-weight: bold;
+            text-transform: capitalize;
+            font-size: 13px;
+        }
+
+        .confirm-question {
+            margin-top: 28px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f3b57;
+        }
+
+        .actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            padding: 13px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .yes-btn {
+            background: #1f8f55;
+            color: white;
+        }
+
+        .yes-btn:hover {
+            background: #177144;
+        }
+
+        .no-btn {
+            background: #c40024;
+            color: white;
+        }
+
+        .no-btn:hover {
+            background: #9d001d;
+        }
+
+        @media (max-width: 800px) {
+            .top-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">Mana Daakuu</div>
+
+        <div class="nav-right">
+            <div class="language-switcher">
+                <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" onclick="setLanguage('om')">Afaan Oromo</button>
+                <button class="lang-btn" onclick="setLanguage('am')">አማርኛ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div class="top-toolbar">
+            <div class="toolbar-left">
+                <div class="toolbar-badge">!</div>
+                <div class="toolbar-meta">
+                    <p class="toolbar-label"
+                       data-en="Booking Validation"
+                       data-om="Mirkaneessa Bookingii"
+                       data-am="የቦኪንግ ማረጋገጫ">
+                        Booking Validation
+                    </p>
+                    <p class="toolbar-name"
+                       data-en="Possible Duplicate Found"
+                       data-om="Walfakkaataan Argame"
+                       data-am="ተመሳሳይ ቦኪንግ ተገኝቷል">
+                        Possible Duplicate Found
+                    </p>
+                </div>
+            </div>
+
+            <div class="toolbar-actions">
+                <a href="/" class="toolbar-link back-btn"
+                   data-en="Back to Booking"
+                   data-om="Gara Booking deebi'i"
+                   data-am="ወደ ቦኪንግ ተመለስ">
+                    Back to Booking
+                </a>
+            </div>
+        </div>
+
+        <div class="duplicate-card">
+            <div class="warning-badge"
+                 data-en="Duplicate Warning"
+                 data-om="Akeekkachiisa Walfakkaataa"
+                 data-am="የተመሳሳይ ቦኪንግ ማስጠንቀቂያ">
+                Duplicate Warning
+            </div>
+
+            <h1 data-en="Confirm Duplicate Booking"
+                data-om="Bookingii Walfakkaataa Mirkaneessi"
+                data-am="ተመሳሳይ ቦኪንግን ያረጋግጡ">
+                Confirm Duplicate Booking
+            </h1>
+
+            <p class="lead-text"
+               data-en="A very similar active booking already exists. This may be an accidental duplicate. Please review the details before continuing."
+               data-om="Bookingiin hojii irra jiru walfakkaataan duraan jira. Kun dogoggoraan irra deebi'amee galfame ta'uu danda'a. Itti fufuu dura bal'ina isaa ilaali."
+               data-am="በጣም ተመሳሳይ የሆነ ንቁ ቦኪንግ አስቀድሞ አለ። ይህ በስህተት በድጋሚ የተገባ ሊሆን ይችላል። ከመቀጠልዎ በፊት ዝርዝሩን ይመልከቱ።">
+                A very similar active booking already exists. This may be an accidental duplicate. Please review the details before continuing.
+            </p>
+
+            <div class="details-box">
+                <h2 class="details-title"
+                    data-en="Existing Booking Details"
+                    data-om="Bal'ina Bookingii Jiru"
+                    data-am="ያለው ቦኪንግ ዝርዝር">
+                    Existing Booking Details
+                </h2>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Reference</span>
+                        <span class="detail-value">{{ duplicate_order.reference_code }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Customer</span>
+                        <span class="detail-value">{{ duplicate_order.customer_name }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Phone</span>
+                        <span class="detail-value">{{ duplicate_order.phone }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Grain Type</span>
+                        <span class="detail-value">{{ duplicate_order.grain_type }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Weight</span>
+                        <span class="detail-value">{{ duplicate_order.weight_kg }} kg</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Price per kg</span>
+                        <span class="detail-value">{{ duplicate_order.price_per_kg }}</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value"><span class="status-pill">{{ duplicate_order.status }}</span></span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Created At</span>
+                        <span class="detail-value">{{ duplicate_order.created_at }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="confirm-question"
+               data-en="Do you still want to add the same booking as paid?"
+               data-om="Ammas bookingii walfakkaataa kana akka kaffalameetti dabaluu barbaaddaa?"
+               data-am="እንደገና ተመሳሳይ ቦኪንግን እንደተከፈለ ማከል ይፈልጋሉ?">
+                Do you still want to add the same booking as paid?
+            </p>
+
+            <form method="post" action="/submit-booking/confirm">
+                <input type="hidden" name="customer_name" value="{{ customer_name }}">
+                <input type="hidden" name="phone" value="{{ phone }}">
+                <input type="hidden" name="grain_type" value="{{ grain_type }}">
+                <input type="hidden" name="weight_kg" value="{{ weight_kg }}">
+                <input type="hidden" name="price_per_kg" value="{{ price_per_kg }}">
+                <input type="hidden" name="payment_method" value="{{ payment_method or 'cash' }}">
+                <input type="hidden" name="payment_confirmed" value="{{ payment_confirmed or 'yes' }}">
+
+                <div class="actions">
+                    <button type="submit" name="confirm_duplicate" value="yes" class="yes-btn"
+                            data-en="Yes, Add Anyway"
+                            data-om="Eeyyee, Haala Kamiinuu Dabaluu"
+                            data-am="አዎ, ቢሆንም ጨምር">
+                        Yes, Add Anyway
+                    </button>
+
+                    <button type="submit" name="confirm_duplicate" value="no" class="no-btn"
+                            data-en="No, Cancel"
+                            data-om="Lakki, Haqi"
+                            data-am="አይ, ሰርዝ">
+                        No, Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll("[data-en]").forEach((element) => {
+                const text = element.getAttribute(`data-${lang}`);
+                if (text) element.textContent = text;
+            });
+
+            document.querySelectorAll(".lang-btn").forEach((btn) => btn.classList.remove("active"));
+            const clickedButton = Array.from(document.querySelectorAll(".lang-btn")).find(
+                (btn) => btn.getAttribute("onclick") === `setLanguage('${lang}')`
+            );
+            if (clickedButton) clickedButton.classList.add("active");
+
+            localStorage.setItem("manaDaakuuLanguage", lang);
+        }
+
+        const savedLanguage = localStorage.getItem("manaDaakuuLanguage") || "en";
+        setLanguage(savedLanguage);
+    </script>
+
+</body>
+</html>
+
