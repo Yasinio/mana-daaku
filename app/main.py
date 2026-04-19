@@ -1,11 +1,13 @@
 from datetime import date, datetime, time, timedelta
-import os
+import csv
 import hashlib
 import hmac
+import io
+import os
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Form, HTTPException, Request, Query
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import inspect, or_, text
 from sqlalchemy.orm import Session
@@ -15,10 +17,10 @@ from app.database import Base, SessionLocal, engine
 from app.models import CustomerOrder
 from app.schemas import OrderCreate, OrderStatusUpdate
 from app.sms import (
-    send_sms,
     build_booking_confirmation_sms,
-    build_processing_sms,
     build_done_sms,
+    build_processing_sms,
+    send_sms,
 )
 
 load_dotenv()
@@ -303,6 +305,56 @@ def create_new_order(
     return new_order, reference_code, total_price
 
 
+def get_today_orders(db: Session):
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+
+    orders = (
+        db.query(CustomerOrder)
+        .filter(
+            CustomerOrder.created_at >= datetime.combine(today, time.min),
+            CustomerOrder.created_at < datetime.combine(tomorrow, time.min),
+        )
+        .order_by(CustomerOrder.created_at.desc(), CustomerOrder.id.desc())
+        .all()
+    )
+
+    return [order for order in orders if order.status != "cancelled"]
+
+
+def get_last_7_days_paid_income(db: Session):
+    today = date.today()
+    chart_data = []
+
+    for days_ago in range(6, -1, -1):
+        target_day = today - timedelta(days=days_ago)
+        next_day = target_day + timedelta(days=1)
+
+        day_orders = (
+            db.query(CustomerOrder)
+            .filter(
+                CustomerOrder.created_at >= datetime.combine(target_day, time.min),
+                CustomerOrder.created_at < datetime.combine(next_day, time.min),
+            )
+            .all()
+        )
+
+        paid_income = sum(
+            order.total_price
+            for order in day_orders
+            if order.status != "cancelled" and order.payment_status == "paid"
+        )
+
+        chart_data.append(
+            {
+                "label": target_day.strftime("%d %b"),
+                "income": float(paid_income),
+            }
+        )
+
+    return chart_data
+
+
 @app.on_event("startup")
 def startup_tasks():
     ensure_reference_code_column()
@@ -527,7 +579,6 @@ def owner_dashboard(
     today = date.today()
 
     query = db.query(CustomerOrder)
-
     cleaned_search = search.strip()
 
     if cleaned_search:
@@ -546,7 +597,8 @@ def owner_dashboard(
         query = query.filter(CustomerOrder.payment_status == payment_filter)
 
     filtered_orders = (
-        query.order_by(CustomerOrder.created_at.asc().nullslast(), CustomerOrder.id.asc()).all()
+        query.order_by(CustomerOrder.created_at.asc().nullslast(), CustomerOrder.id.asc())
+        .all()
     )
 
     all_orders_for_summary = (
@@ -589,11 +641,18 @@ def owner_dashboard(
         and order.status != "cancelled"
     ]
 
-    today_paid_orders = [
+    paid_today_orders = [
         order for order in today_orders if order.payment_status == "paid"
     ]
 
-    total_income = sum(order.total_price for order in today_paid_orders)
+    unpaid_today_orders = [
+        order for order in today_orders if order.payment_status == "unpaid"
+    ]
+
+    total_income = sum(order.total_price for order in paid_today_orders)
+    unpaid_total = sum(order.total_price for order in unpaid_today_orders)
+
+    chart_data = get_last_7_days_paid_income(db)
 
     return templates.TemplateResponse(
         request,
@@ -601,14 +660,19 @@ def owner_dashboard(
         {
             "today_date": str(today),
             "today_orders_count": len(today_orders),
-            "paid_today_orders_count": len(today_paid_orders),
+            "paid_today_orders_count": len(paid_today_orders),
+            "unpaid_today_orders_count": len(unpaid_today_orders),
             "total_income": total_income,
+            "unpaid_total": unpaid_total,
+            "has_unpaid_orders": len(unpaid_today_orders) > 0,
+            "unpaid_orders_warning_count": len(unpaid_today_orders),
             "queue_list": queue_list,
             "all_orders": filtered_orders,
             "admin_username": request.session.get("admin_username", "admin"),
             "search": cleaned_search,
             "status_filter": status_filter,
             "payment_filter": payment_filter,
+            "chart_data": chart_data,
         },
     )
 
@@ -785,6 +849,81 @@ def delete_order(
     return RedirectResponse(url="/dashboard", status_code=303)
 
 
+@app.post("/dashboard/delete-selected/confirm", response_class=HTMLResponse)
+async def confirm_bulk_delete_page(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    if not is_logged_in(request):
+        return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    raw_order_ids = form.getlist("order_ids")
+
+    if not raw_order_ids:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    selected_ids = []
+    for raw_id in raw_order_ids:
+        try:
+            selected_ids.append(int(raw_id))
+        except ValueError:
+            continue
+
+    if not selected_ids:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    selected_orders = (
+        db.query(CustomerOrder)
+        .filter(CustomerOrder.id.in_(selected_ids))
+        .order_by(CustomerOrder.created_at.desc().nullslast(), CustomerOrder.id.desc())
+        .all()
+    )
+
+    if not selected_orders:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    return templates.TemplateResponse(
+        request,
+        "confirm_bulk_delete.html",
+        {
+            "selected_orders": selected_orders,
+            "selected_count": len(selected_orders),
+            "admin_username": request.session.get("admin_username", "admin"),
+        },
+    )
+
+
+@app.post("/dashboard/delete-selected")
+def bulk_delete_orders(
+    request: Request,
+    confirm_delete_selected: str = Form(...),
+    order_ids: list[int] = Form(default=[]),
+    db: Session = Depends(get_db),
+):
+    if not is_logged_in(request):
+        return RedirectResponse(url="/login", status_code=303)
+
+    if confirm_delete_selected == "no":
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    if not order_ids:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    orders_to_delete = (
+        db.query(CustomerOrder)
+        .filter(CustomerOrder.id.in_(order_ids))
+        .all()
+    )
+
+    for order in orders_to_delete:
+        db.delete(order)
+
+    db.commit()
+
+    return RedirectResponse(url="/dashboard", status_code=303)
+
+
 @app.get("/queue", response_class=HTMLResponse)
 def queue_page(
     request: Request,
@@ -850,25 +989,16 @@ def income_today_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login", status_code=303)
 
     today = date.today()
-    tomorrow = today + timedelta(days=1)
-
-    today_orders = (
-        db.query(CustomerOrder)
-        .filter(
-            CustomerOrder.created_at >= datetime.combine(today, time.min),
-            CustomerOrder.created_at < datetime.combine(tomorrow, time.min),
-        )
-        .order_by(CustomerOrder.created_at.desc(), CustomerOrder.id.desc())
-        .all()
-    )
-
-    today_orders = [order for order in today_orders if order.status != "cancelled"]
+    today_orders = get_today_orders(db)
 
     paid_orders = [order for order in today_orders if order.payment_status == "paid"]
     unpaid_orders = [order for order in today_orders if order.payment_status == "unpaid"]
     done_orders = [order for order in today_orders if order.status == "done"]
 
     total_income = sum(order.total_price for order in paid_orders)
+    unpaid_total = sum(order.total_price for order in unpaid_orders)
+
+    chart_data = get_last_7_days_paid_income(db)
 
     return templates.TemplateResponse(
         request,
@@ -880,9 +1010,72 @@ def income_today_page(request: Request, db: Session = Depends(get_db)):
             "unpaid_orders": len(unpaid_orders),
             "done_orders_count": len(done_orders),
             "total_income": total_income,
+            "unpaid_total": unpaid_total,
+            "has_unpaid_orders": len(unpaid_orders) > 0,
+            "unpaid_orders_warning_count": len(unpaid_orders),
             "income_orders": today_orders,
+            "chart_data": chart_data,
             "is_admin": True,
         },
+    )
+
+
+@app.get("/income/today/export.csv")
+def export_income_today_csv(request: Request, db: Session = Depends(get_db)):
+    if not is_logged_in(request):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    orders = get_today_orders(db)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(
+        [
+            "ID",
+            "Reference Code",
+            "Customer Name",
+            "Phone",
+            "Grain Type",
+            "Weight (kg)",
+            "Price per kg",
+            "Total Price",
+            "Payment Status",
+            "Payment Method",
+            "Status",
+            "Created At",
+            "Completed At",
+        ]
+    )
+
+    for order in orders:
+        writer.writerow(
+            [
+                order.id,
+                order.reference_code or "",
+                order.customer_name or "",
+                order.phone or "",
+                order.grain_type or "",
+                order.weight_kg or 0,
+                order.price_per_kg or 0,
+                order.total_price or 0,
+                order.payment_status or "",
+                order.payment_method or "",
+                order.status or "",
+                order.created_at or "",
+                order.completed_at or "",
+            ]
+        )
+
+    csv_content = output.getvalue()
+    output.close()
+
+    filename = f"mana_daakuu_income_{date.today().isoformat()}.csv"
+
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
@@ -1027,28 +1220,20 @@ def get_today_income(request: Request, db: Session = Depends(get_db)):
     if not is_logged_in(request):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    today = date.today()
-    tomorrow = today + timedelta(days=1)
+    today_orders = get_today_orders(db)
 
-    today_orders = (
-        db.query(CustomerOrder)
-        .filter(
-            CustomerOrder.created_at >= datetime.combine(today, time.min),
-            CustomerOrder.created_at < datetime.combine(tomorrow, time.min),
-        )
-        .all()
-    )
-
-    today_orders = [order for order in today_orders if order.status != "cancelled"]
     paid_orders = [order for order in today_orders if order.payment_status == "paid"]
     unpaid_orders = [order for order in today_orders if order.payment_status == "unpaid"]
+
     total_income = sum(order.total_price for order in paid_orders)
+    unpaid_total = sum(order.total_price for order in unpaid_orders)
 
     return {
-        "date": str(today),
+        "date": str(date.today()),
         "today_orders": len(today_orders),
         "paid_orders": len(paid_orders),
         "unpaid_orders": len(unpaid_orders),
         "total_income": total_income,
+        "unpaid_total": unpaid_total,
     }
 
