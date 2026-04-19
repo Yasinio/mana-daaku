@@ -371,6 +371,11 @@ def startup_tasks():
     backfill_completed_at_for_old_done_orders()
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/", response_class=HTMLResponse)
 def booking_page(request: Request):
     return templates.TemplateResponse(
@@ -1080,7 +1085,7 @@ def export_income_today_csv(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/api")
-def home():
+def api_home():
     return {"message": "Mana Daakuu backend is running"}
 
 
@@ -1237,3 +1242,11 @@ def get_today_income(request: Request, db: Session = Depends(get_db)):
         "unpaid_total": unpaid_total,
     }
 
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
+
+    
