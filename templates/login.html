@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Mana Daakuu</title>
+    <title>Mana Daakuu</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,56 +76,45 @@
             text-align: center;
         }
 
-        .success {
-            background: #e7f7e7;
-            color: #166216;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 14px;
+        .forgot {
             text-align: center;
+            margin-top: 12px;
         }
 
-        .forgot-wrap {
-            margin-top: 14px;
-            text-align: center;
-        }
-
-        .forgot-wrap a {
+        .forgot a {
             color: #1f7a1f;
-            font-weight: bold;
             text-decoration: none;
+            font-size: 14px;
         }
 
-        .forgot-wrap a:hover {
+        .forgot a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
     <div class="login-box">
-        <h1>Mana Daakuu Admin</h1>
-        <p>Login to access the owner dashboard</p>
+        <h1>Mana Daakuu</h1>
+        <p>Login to continue</p>
 
         <form method="post" action="/login">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
+            <label>Username</label>
+            <input type="text" name="username" required>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
+            <label>Password</label>
+            <input type="password" name="password" required>
 
             <button type="submit">Login</button>
         </form>
 
-        <div class="forgot-wrap">
+        <!-- Forgot password link -->
+        <div class="forgot">
             <a href="/forgot-password">Forgot password?</a>
         </div>
 
         {% if error_message %}
             <div class="error">{{ error_message }}</div>
-        {% endif %}
-
-        {% if success_message %}
-            <div class="success">{{ success_message }}</div>
         {% endif %}
     </div>
 </body>
