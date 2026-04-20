@@ -1,9 +1,13 @@
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 import csv
 import hashlib
 import hmac
 import io
 import os
+import secrets
+import smtplib
+import ssl
+from email.message import EmailMessage
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
@@ -14,7 +18,7 @@ from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import Base, SessionLocal, engine
-from app.models import CustomerOrder
+from app.models import AdminUser, CustomerOrder, PasswordResetToken
 from app.schemas import OrderCreate, OrderStatusUpdate
 from app.sms import (
     build_booking_confirmation_sms,
@@ -32,6 +36,13 @@ app = FastAPI(title="Mana Daakuu API")
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", "")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
+
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "")
 
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
@@ -42,6 +53,64 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    finally:
+        db.close()
+
+
+def hash_password(plain_password: str) -> str:
+    salt = os.urandom(16)
+    password_hash = hashlib.pbkdf2_hmac(
+        "sha256",
+        plain_password.encode("utf-8"),
+        salt,
+        100_000,
+    )
+    return f"{salt.hex()}${password_hash.hex()}"
+
+
+def verify_password(plain_password: str, stored_password_hash: str) -> bool:
+    try:
+        salt_hex, hash_hex = stored_password_hash.split("$", 1)
+        salt = bytes.fromhex(salt_hex)
+        expected_hash = bytes.fromhex(hash_hex)
+
+        test_hash = hashlib.pbkdf2_hmac(
+            "sha256",
+            plain_password.encode("utf-8"),
+            salt,
+            100_000,
+        )
+
+        return hmac.compare_digest(test_hash, expected_hash)
+    except Exception:
+        return False
+
+
+def is_logged_in(request: Request) -> bool:
+    return bool(request.session.get("admin_logged_in"))
+
+
+def get_admin_by_username(db: Session, username: str):
+    return db.query(AdminUser).filter(AdminUser.username == username).first()
+
+
+def get_admin_by_email(db: Session, email: str):
+    return db.query(AdminUser).filter(AdminUser.email == email).first()
+
+
+def seed_default_admin_if_missing():
+    db = SessionLocal()
+    try:
+        existing_admin = db.query(AdminUser).filter(AdminUser.username == ADMIN_USERNAME).first()
+        if not existing_admin and ADMIN_PASSWORD_HASH:
+            admin = AdminUser(
+                username=ADMIN_USERNAME,
+                email=ADMIN_EMAIL,
+                password_hash=ADMIN_PASSWORD_HASH,
+                is_active=True,
+            )
+            db.add(admin)
+            db.commit()
     finally:
         db.close()
 
@@ -228,28 +297,6 @@ def send_done_sms(order: CustomerOrder):
     send_sms(order.phone, sms_message)
 
 
-def is_logged_in(request: Request) -> bool:
-    return bool(request.session.get("admin_logged_in"))
-
-
-def verify_password(plain_password: str, stored_password_hash: str) -> bool:
-    try:
-        salt_hex, hash_hex = stored_password_hash.split("$", 1)
-        salt = bytes.fromhex(salt_hex)
-        expected_hash = bytes.fromhex(hash_hex)
-
-        test_hash = hashlib.pbkdf2_hmac(
-            "sha256",
-            plain_password.encode("utf-8"),
-            salt,
-            100_000,
-        )
-
-        return hmac.compare_digest(test_hash, expected_hash)
-    except Exception:
-        return False
-
-
 def find_possible_duplicate_order(
     db: Session,
     customer_name: str,
@@ -355,6 +402,74 @@ def get_last_7_days_paid_income(db: Session):
     return chart_data
 
 
+def create_password_reset_token(db: Session, email: str) -> str:
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+    reset_token = PasswordResetToken(
+        email=email,
+        token=token,
+        is_used=False,
+        expires_at=expires_at,
+    )
+    db.add(reset_token)
+    db.commit()
+    return token
+
+
+def get_valid_reset_token(db: Session, token: str):
+    reset_token = (
+        db.query(PasswordResetToken)
+        .filter(PasswordResetToken.token == token)
+        .filter(PasswordResetToken.is_used == False)
+        .first()
+    )
+
+    if not reset_token:
+        return None
+
+    now_utc = datetime.now(timezone.utc)
+    token_expires_at = reset_token.expires_at
+
+    if token_expires_at.tzinfo is None:
+        token_expires_at = token_expires_at.replace(tzinfo=timezone.utc)
+
+    if token_expires_at < now_utc:
+        return None
+
+    return reset_token
+
+
+def send_reset_email(to_email: str, reset_link: str):
+    if not SMTP_HOST or not SMTP_USERNAME or not SMTP_PASSWORD or not SMTP_FROM_EMAIL:
+        raise ValueError("SMTP settings are missing. Please configure email settings.")
+
+    message = EmailMessage()
+    message["Subject"] = "Mana Daakuu Password Reset"
+    message["From"] = SMTP_FROM_EMAIL
+    message["To"] = to_email
+    message.set_content(
+        f"""
+Hello,
+
+You requested a password reset for Mana Daakuu Admin.
+
+Click the link below to reset your password:
+{reset_link}
+
+This link expires in 1 hour.
+
+If you did not request this, ignore this email.
+        """.strip()
+    )
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.starttls(context=context)
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        server.send_message(message)
+
+
 @app.on_event("startup")
 def startup_tasks():
     ensure_reference_code_column()
@@ -369,6 +484,7 @@ def startup_tasks():
         db.close()
 
     backfill_completed_at_for_old_done_orders()
+    seed_default_admin_if_missing()
 
 
 @app.get("/health")
@@ -399,6 +515,7 @@ def login_page(request: Request):
         "login.html",
         {
             "error_message": None,
+            "success_message": None,
         },
     )
 
@@ -408,10 +525,14 @@ def login_submit(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
+    db: Session = Depends(get_db),
 ):
-    if username == ADMIN_USERNAME and verify_password(password, ADMIN_PASSWORD_HASH):
+    admin = get_admin_by_username(db, username)
+
+    if admin and admin.is_active and verify_password(password, admin.password_hash):
         request.session["admin_logged_in"] = True
-        request.session["admin_username"] = username
+        request.session["admin_username"] = admin.username
+        request.session["admin_email"] = admin.email
         return RedirectResponse(url="/dashboard", status_code=303)
 
     return templates.TemplateResponse(
@@ -419,6 +540,150 @@ def login_submit(
         "login.html",
         {
             "error_message": "Invalid username or password.",
+            "success_message": None,
+        },
+    )
+
+
+@app.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "forgot_password.html",
+        {
+            "error_message": None,
+            "success_message": None,
+        },
+    )
+
+
+@app.post("/forgot-password", response_class=HTMLResponse)
+def forgot_password_submit(
+    request: Request,
+    email: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    admin = get_admin_by_email(db, email)
+
+    if not admin:
+        return templates.TemplateResponse(
+            request,
+            "forgot_password.html",
+            {
+                "error_message": "No admin account found with that email.",
+                "success_message": None,
+            },
+        )
+
+    try:
+        token = create_password_reset_token(db, email)
+        base_url = str(request.base_url).rstrip("/")
+        reset_link = f"{base_url}/reset-password?token={token}"
+        send_reset_email(email, reset_link)
+
+        return templates.TemplateResponse(
+            request,
+            "forgot_password.html",
+            {
+                "error_message": None,
+                "success_message": "A reset link has been sent to your email.",
+            },
+        )
+    except Exception as exc:
+        return templates.TemplateResponse(
+            request,
+            "forgot_password.html",
+            {
+                "error_message": f"Failed to send reset email. {str(exc)}",
+                "success_message": None,
+            },
+        )
+
+
+@app.get("/reset-password", response_class=HTMLResponse)
+def reset_password_page(
+    request: Request,
+    token: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    reset_token = get_valid_reset_token(db, token)
+
+    if not reset_token:
+        return templates.TemplateResponse(
+            request,
+            "reset_password.html",
+            {
+                "token": token,
+                "error_message": "This reset link is invalid or expired.",
+                "success_message": None,
+            },
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "reset_password.html",
+        {
+            "token": token,
+            "error_message": None,
+            "success_message": None,
+        },
+    )
+
+
+@app.post("/reset-password", response_class=HTMLResponse)
+def reset_password_submit(
+    request: Request,
+    token: str = Form(...),
+    new_password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    reset_token = get_valid_reset_token(db, token)
+
+    if not reset_token:
+        return templates.TemplateResponse(
+            request,
+            "reset_password.html",
+            {
+                "token": token,
+                "error_message": "This reset link is invalid or expired.",
+                "success_message": None,
+            },
+        )
+
+    admin = get_admin_by_email(db, reset_token.email)
+    if not admin:
+        return templates.TemplateResponse(
+            request,
+            "reset_password.html",
+            {
+                "token": token,
+                "error_message": "Admin account not found.",
+                "success_message": None,
+            },
+        )
+
+    if len(new_password) < 8:
+        return templates.TemplateResponse(
+            request,
+            "reset_password.html",
+            {
+                "token": token,
+                "error_message": "Password must be at least 8 characters long.",
+                "success_message": None,
+            },
+        )
+
+    admin.password_hash = hash_password(new_password)
+    reset_token.is_used = True
+    reset_token.used_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return templates.TemplateResponse(
+        request,
+        "login.html",
+        {
+            "error_message": None,
+            "success_message": "Password reset successful. You can now log in.",
         },
     )
 
